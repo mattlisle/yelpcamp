@@ -8,12 +8,34 @@ services:
     image: nodeapp
     container_name: nodeapp
     ports:
-      - "80:8080"
+      - "80:3000"
     volumes:
       # Bind mount for the app directory, could use environment variable to make this sturdier
       - .:/usr/src/app
       # Assumes the the host doesn't have a pre-existing nod_modules directory
       - node_modules:/usr/src/app/node_modules
+    environment:
+      - MONGO_USERNAME=root
+      - MONGO_PASSWORD=example
+      - MONGO_HOSTNAME=mongo
+      - MONGO_PORT=27017
+      - MONGO_DATABASE_NAME=yelpcamp_db
+    depends_on:
+      - mongo
+    healthcheck:
+      disable: true
+
+  mongo:
+    image: mongo:4
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_DATABASE=yelpcamp_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data_container:/data/db
 
 volumes:
   node_modules:
+  mongodb_data_container:

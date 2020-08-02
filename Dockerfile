@@ -8,10 +8,11 @@ WORKDIR /usr/src/app
 # where available (npm@5+)
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --no-optional && npm cache clean --force
 
 # Bundle app source
 COPY . .
 
-EXPOSE 8080
+EXPOSE 3000
+# CMD [ "mongo" ]
 CMD [ "node", "app.js" ]
