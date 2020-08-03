@@ -30,28 +30,29 @@ const uri = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOSTNAME}:${M
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const morgan = require('morgan');
+
+const Campground = require('./models/campground');
+const Comment = require('./models/comment');
+const seedDb = require('./seed');
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
+app.use(morgan('common'));
 
 mongoose
   .connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('Connected to DB!'))
+  .then(() => {
+    console.log('Connected to DB!');
+    seedDb();
+  })
   .catch(error => { throw error; });
-
-const camgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String,
-});
-
-const Campground = mongoose.model('Campground', camgroundSchema);
 
 app.get('/', (req, res) => {
   res.render('landing');
