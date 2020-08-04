@@ -12,21 +12,6 @@ const PORT = 3000;
 const HOST = '0.0.0.0';
 const uri = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOSTNAME}:${MONGO_PORT}`;
 
-// const campgrounds = [
-//   { name: 'camp1', image: 'https://images.pexels.com/photos/1840421/pexels-photo-1840421.jpeg?auto=compress&cs=tinysrgb&h=350' },
-//   { name: 'camp2', image: 'https://images.pexels.com/photos/753603/pexels-photo-753603.jpeg?auto=compress&cs=tinysrgb&h=350' },
-//   { name: 'camp3', image: 'https://images.pexels.com/photos/1309584/pexels-photo-1309584.jpeg?auto=compress&cs=tinysrgb&h=350' },
-//   { name: 'camp1', image: 'https://images.pexels.com/photos/1840421/pexels-photo-1840421.jpeg?auto=compress&cs=tinysrgb&h=350' },
-//   { name: 'camp2', image: 'https://images.pexels.com/photos/753603/pexels-photo-753603.jpeg?auto=compress&cs=tinysrgb&h=350' },
-//   { name: 'camp3', image: 'https://images.pexels.com/photos/1309584/pexels-photo-1309584.jpeg?auto=compress&cs=tinysrgb&h=350' },
-// ];
-
-// {
-//   name: 'Yosemite Bridalveil Creek'
-//   image: 'https://www.myyosemitepark.com/.image/c_limit%2Ccs_srgb%2Cq_auto:good%2Cw_680/MTQ3OTg4NjE5MDk5MjUxODY3/yt-bridalveil-creek-campground_ordelheide_680.webp',
-//   description: 'Reservation only campground in Yosemite National Park'
-// }
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -49,7 +34,6 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log('Connected to DB!');
     seedDb();
   })
   .catch(error => { throw error; });
@@ -63,7 +47,7 @@ app.get('/campgrounds', (_, res) => {
   // eslint-disable-next-line array-callback-return
   Campground.find((err, campgrounds) => {
     if (err) throw err;
-    res.render('index', { campgrounds });
+    res.render('campgrounds/index', { campgrounds });
   });
 });
 
@@ -85,14 +69,37 @@ app.post('/campgrounds', (req, res) => {
 
 // REST: new page
 app.get('/campgrounds/new', (req, res) => {
-  res.render('new');
+  res.render('campgrounds/new');
 });
 
 // REST: show page
 app.get('/campgrounds/:id', (req, res) => {
+  Campground.findById(req.params.id)
+    .populate('comments')
+    .exec((error, campground) => {
+      if (error) throw error;
+      res.render('campgrounds/show', { campground });
+    });
+});
+
+app.get('/campgrounds/:id/comments/new', (req, res) => {
   Campground.findById(req.params.id, (error, campground) => {
     if (error) throw error;
-    res.render('show', { campground });
+    res.render('comments/new', { campground });
+  });
+});
+
+app.post('/campgrounds/:id/comments', async (req, res) => {
+  console.log('Received post request');
+  Campground.findById(req.params.id, async (error, campground) => {
+    if (error) throw error;
+    console.log(req.body.comment);
+    const comment = await Comment.create(req.body.comment);
+    console.log(comment);
+    campground.comments.push(comment);
+    campground.save()
+      .then(newCampground => console.log(newCampground));
+    res.redirect(`/campgrounds/${campground._id}`);
   });
 });
 
