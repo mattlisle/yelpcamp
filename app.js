@@ -67,12 +67,12 @@ app.post('/campgrounds', (req, res) => {
     .catch(error => { throw error; });
 });
 
-// REST: new page
+// Campground: new page
 app.get('/campgrounds/new', (req, res) => {
   res.render('campgrounds/new');
 });
 
-// REST: show page
+// Campground: show page
 app.get('/campgrounds/:id', (req, res) => {
   Campground.findById(req.params.id)
     .populate('comments')
@@ -82,6 +82,7 @@ app.get('/campgrounds/:id', (req, res) => {
     });
 });
 
+// Comment: new page
 app.get('/campgrounds/:id/comments/new', (req, res) => {
   Campground.findById(req.params.id, (error, campground) => {
     if (error) throw error;
