@@ -5,7 +5,6 @@ const {
   MONGO_PASSWORD,
   MONGO_HOSTNAME,
   MONGO_PORT,
-  MONGO_DATABASE_NAME
 } = process.env;
 
 const PORT = 3000;
@@ -13,9 +12,13 @@ const HOST = '0.0.0.0';
 const uri = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOSTNAME}:${MONGO_PORT}`;
 
 const express = require('express');
+const expressSession = require('express-session');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const LocalStrategy = require('passport-local');
+const passport = require('passport');
+const User = require('./models/user');
 
 const Campground = require('./models/campground');
 const Comment = require('./models/comment');
@@ -27,6 +30,32 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(morgan('common'));
+
+app.use(expressSession({
+  secret: 'so so secret',
+  resave: false,
+  saveUninitialized: false,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// must be placed after passport initialization to work
+app.use((req, res, next) => {
+  console.log(req.user);
+  res.locals.currentUser = req.user;
+  next();
+});
+
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect('/login');
+  return undefined;
+}
 
 mongoose
   .connect(uri, {
@@ -43,7 +72,7 @@ app.get('/', (req, res) => {
 });
 
 // REST: index page
-app.get('/campgrounds', (_, res) => {
+app.get('/campgrounds', (req, res) => {
   // eslint-disable-next-line array-callback-return
   Campground.find((err, campgrounds) => {
     if (err) throw err;
@@ -53,7 +82,6 @@ app.get('/campgrounds', (_, res) => {
 
 // REST: create page
 app.post('/campgrounds', (req, res) => {
-  console.log('Received post request');
   Campground
     .create({
       name: req.body.name,
@@ -61,7 +89,6 @@ app.post('/campgrounds', (req, res) => {
       description: req.body.description,
     })
     .then(() => {
-      console.log('Created a campground');
       res.redirect('campgrounds');
     })
     .catch(error => { throw error; });
@@ -83,20 +110,17 @@ app.get('/campgrounds/:id', (req, res) => {
 });
 
 // Comment: new page
-app.get('/campgrounds/:id/comments/new', (req, res) => {
+app.get('/campgrounds/:id/comments/new', isLoggedIn, (req, res) => {
   Campground.findById(req.params.id, (error, campground) => {
     if (error) throw error;
     res.render('comments/new', { campground });
   });
 });
 
-app.post('/campgrounds/:id/comments', async (req, res) => {
-  console.log('Received post request');
+app.post('/campgrounds/:id/comments', isLoggedIn, async (req, res) => {
   Campground.findById(req.params.id, async (error, campground) => {
     if (error) throw error;
-    console.log(req.body.comment);
     const comment = await Comment.create(req.body.comment);
-    console.log(comment);
     campground.comments.push(comment);
     campground.save()
       .then(newCampground => console.log(newCampground));
@@ -104,10 +128,47 @@ app.post('/campgrounds/:id/comments', async (req, res) => {
   });
 });
 
+// Auth routes
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+app.post('/register', (req, res) => {
+  const newUser = new User({ username: req.body.username });
+  User.register(newUser, req.body.password, (error, _user) => {
+    if (error) throw error;
+    passport.authenticate('local')(
+      req,
+      res,
+      () => { res.redirect('/campgrounds'); }
+    );
+  });
+});
+
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post(
+  '/login',
+  passport.authenticate(
+    'local',
+    {
+      successRedirect: 'campgrounds',
+      failureRedirect: 'login',
+    }
+  ),
+  (req, res) => {}
+);
+
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/campgrounds');
+});
+
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
 
 process.on('SIGTERM', () => {
-  console.info('Shutting down gracefully');
   process.exit(0);
 });
