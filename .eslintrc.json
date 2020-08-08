@@ -22,13 +22,13 @@
                 "arrays": "always-multiline",
                 "objects": "always-multiline"
             }
+        ],
+        "no-unused-vars": [
+            2,
+            {
+                "argsIgnorePattern": "^_*",
+                "varsIgnorePattern": "^_*"
+            }
         ]
-    },
-    "no-unused-vars": [
-        2,
-        {
-            "argsIgnorePattern": "^_*",
-            "varsIgnorePattern": "^_*"
-        }
-    ]
+    }
 }

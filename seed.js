@@ -24,13 +24,7 @@ async function seedDb() {
   await Comment.remove({});
 
   seeds.forEach(async seed => {
-    const campground = await Campground.create(seed);
-    const comment = await Comment.create({
-      text: 'I have got no things to say',
-      author: 'John Smith',
-    });
-    campground.comments.push(comment);
-    campground.save();
+    await Campground.create(seed);
   });
 }
 
