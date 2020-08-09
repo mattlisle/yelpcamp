@@ -20,7 +20,6 @@ const LocalStrategy = require('passport-local');
 const passport = require('passport');
 
 const User = require('./models/user');
-const seedDb = require('./seed');
 
 const commentRoutes = require('./routes/comments');
 const campgroundRoutes = require('./routes/campgrounds');
@@ -63,9 +62,7 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => {
-    seedDb();
-  })
+  .then(() => { })
   .catch(error => { throw error; });
 
 app.listen(PORT, HOST);

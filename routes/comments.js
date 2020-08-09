@@ -1,14 +1,9 @@
 const express = require('express');
 const Campground = require('../models/campground');
 const Comment = require('../models/comment');
+const isLoggedIn = require('../middleware/isLoggedIn');
 
 const router = express.Router({ mergeParams: true });
-
-function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  res.redirect('/login');
-  return undefined;
-}
 
 // Comment: new page
 router.get('/new', isLoggedIn, (req, res) => {

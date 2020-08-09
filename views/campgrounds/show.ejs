@@ -27,6 +27,9 @@
           <p class="card-text">
             <%= campground.description %> 
           </p>
+          <p class="card-text float-right">
+            <em>Submitted by <strong><%= campground.author.username %></strong></em>
+          </p>
         </div>
         <div class="card-body bg-light">
           <div class="text-right">
