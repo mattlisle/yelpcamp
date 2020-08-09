@@ -6,3 +6,7 @@
   width: 30%;
   margin: 25px auto;
 }
+
+#delete-form {
+  display: inline;
+}

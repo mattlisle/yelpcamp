@@ -4,8 +4,7 @@ const isLoggedIn = require('../middleware/isLoggedIn');
 
 const router = express.Router();
 
-// REST: index page
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
   // eslint-disable-next-line array-callback-return
   Campground.find((err, campgrounds) => {
     if (err) throw err;
@@ -13,7 +12,6 @@ router.get('/', (req, res) => {
   });
 });
 
-// REST: create page
 router.post('/', isLoggedIn, (req, res) => {
   Campground
     .create({
@@ -31,12 +29,28 @@ router.post('/', isLoggedIn, (req, res) => {
     .catch(error => { throw error; });
 });
 
-// Campground: new page
+router.get('/:id/edit', (req, res) => {
+  Campground.findById(req.params.id, (error, campground) => {
+    if (error) throw error;
+    res.render('campgrounds/edit', { campground });
+  });
+});
+
+router.put('/:id', (req, res) => {
+  Campground.findByIdAndUpdate(
+    req.params.id,
+    req.body.campground,
+    (error, _campground) => {
+      if (error) throw error;
+      res.redirect(`/campgrounds/${req.params.id}`);
+    }
+  );
+});
+
 router.get('/new', isLoggedIn, (req, res) => {
   res.render('campgrounds/new');
 });
 
-// Campground: show page
 router.get('/:id', (req, res) => {
   Campground.findById(req.params.id)
     .populate('comments')
@@ -44,6 +58,16 @@ router.get('/:id', (req, res) => {
       if (error) throw error;
       res.render('campgrounds/show', { campground });
     });
+});
+
+router.delete('/:id', (req, res) => {
+  Campground.findByIdAndRemove(
+    req.params.id,
+    error => {
+      if (error) throw error;
+      res.redirect('/campgrounds');
+    }
+  );
 });
 
 module.exports = router;

@@ -18,7 +18,7 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 const LocalStrategy = require('passport-local');
 const passport = require('passport');
-
+const methodOverride = require('method-override');
 const User = require('./models/user');
 
 const commentRoutes = require('./routes/comments');
@@ -38,7 +38,7 @@ app.use(expressSession({
   resave: false,
   saveUninitialized: false,
 }));
-
+app.use(methodOverride('_method'));
 app.use(passport.initialize());
 app.use(passport.session());
 
