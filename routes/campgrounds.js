@@ -1,5 +1,6 @@
 const express = require('express');
 const Campground = require('../models/campground');
+const Comment = require('../models/comment');
 const isLoggedIn = require('../middleware/isLoggedIn');
 
 const router = express.Router();
@@ -61,10 +62,18 @@ router.get('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  Campground.findByIdAndRemove(
+  Campground.findByIdAndDelete(
     req.params.id,
-    error => {
+    (error, campground) => {
       if (error) throw error;
+      campground.comments.forEach(comment => {
+        Comment.findByIdAndDelete(
+          comment._id,
+          (ex, _) => {
+            if (ex) throw ex;
+          }
+        );
+      });
       res.redirect('/campgrounds');
     }
   );
