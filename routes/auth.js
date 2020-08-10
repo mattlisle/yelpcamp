@@ -34,7 +34,7 @@ router.post(
       failureRedirect: 'login',
     }
   ),
-  (req, res) => {}
+  (req, res) => { res.redirect('back'); }
 );
 
 router.get('/logout', (req, res) => {

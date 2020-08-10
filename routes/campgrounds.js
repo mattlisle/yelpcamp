@@ -2,6 +2,7 @@ const express = require('express');
 const Campground = require('../models/campground');
 const Comment = require('../models/comment');
 const isLoggedIn = require('../middleware/isLoggedIn');
+const checkOwnership = require('../middleware/checkOwnership');
 
 const router = express.Router();
 
@@ -30,14 +31,14 @@ router.post('/', isLoggedIn, (req, res) => {
     .catch(error => { throw error; });
 });
 
-router.get('/:id/edit', (req, res) => {
+router.get('/:id/edit', checkOwnership, (req, res) => {
   Campground.findById(req.params.id, (error, campground) => {
     if (error) throw error;
     res.render('campgrounds/edit', { campground });
   });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', checkOwnership, (req, res) => {
   Campground.findByIdAndUpdate(
     req.params.id,
     req.body.campground,
@@ -61,7 +62,7 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', checkOwnership, (req, res) => {
   Campground.findByIdAndDelete(
     req.params.id,
     (error, campground) => {
