@@ -5,19 +5,19 @@
   <div class="row mt-3">
 
     <div class="col-sm-12">
-      <h1 class="default-header">Comment on the <%= campground.name %> campground</h1>
+      <h1 class="default-header">Edit Comment</h1>
     </div>
 
     <div id="new-camp-form">
 
-      <form action="/campgrounds/<%= campground._id %>/comments" method="POST">
+      <form action="/campgrounds/<%= campgroundId %>/comments/<%= comment._id %>?_method=PUT" method="POST">
         <div class="form-group">
-          <input class="form-control" type="text" name="comment[text]" placeholder="content">
+          <input class="form-control" type="text" name="comment[text]" value="<%= comment.text %>">
         </div>
         <button class="btn btn-primary btn-block">Submit</button>
       </form>
 
-      <a href="/campgrounds/<%= campground._id %>" class>Back to campground</a>
+      <a href="/campgrounds/<%= campgroundId %>" class>Back to campground</a>
     </div>
   </div>
 </div>

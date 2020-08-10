@@ -28,4 +28,25 @@ router.post('/', isLoggedIn, async (req, res) => {
   });
 });
 
+router.get('/:commentId/edit', (req, res) => {
+  Comment.findById(req.params.commentId, (error, comment) => {
+    if (error) throw error;
+    res.render('comments/edit', {
+      campgroundId: req.params.id,
+      comment,
+    });
+  });
+});
+
+router.put('/:commentId', (req, res) => {
+  Comment.findByIdAndUpdate(
+    req.params.commentId,
+    req.body.comment,
+    (error, _comment) => {
+      if (error) throw error;
+      res.redirect(`/campgrounds/${req.params.id}`);
+    }
+  );
+});
+
 module.exports = router;
