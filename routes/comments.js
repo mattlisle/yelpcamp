@@ -2,6 +2,7 @@ const express = require('express');
 const Campground = require('../models/campground');
 const Comment = require('../models/comment');
 const isLoggedIn = require('../middleware/isLoggedIn');
+const checkCommentOwnership = require('../middleware/checkCommentOwnership');
 
 const router = express.Router({ mergeParams: true });
 
@@ -28,7 +29,7 @@ router.post('/', isLoggedIn, async (req, res) => {
   });
 });
 
-router.get('/:commentId/edit', (req, res) => {
+router.get('/:commentId/edit', checkCommentOwnership, (req, res) => {
   Comment.findById(req.params.commentId, (error, comment) => {
     if (error) throw error;
     res.render('comments/edit', {
@@ -38,11 +39,21 @@ router.get('/:commentId/edit', (req, res) => {
   });
 });
 
-router.put('/:commentId', (req, res) => {
+router.put('/:commentId', checkCommentOwnership, (req, res) => {
   Comment.findByIdAndUpdate(
     req.params.commentId,
     req.body.comment,
     (error, _comment) => {
+      if (error) throw error;
+      res.redirect(`/campgrounds/${req.params.id}`);
+    }
+  );
+});
+
+router.delete('/:commentId', checkCommentOwnership, (req, res) => {
+  Comment.findByIdAndDelete(
+    req.params.commentId,
+    error => {
       if (error) throw error;
       res.redirect(`/campgrounds/${req.params.id}`);
     }
