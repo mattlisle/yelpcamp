@@ -6,15 +6,18 @@ module.exports = function checkOwnership(req, res, next) {
       req.params.id,
       (error, campground) => {
         if (error) {
-          throw error;
+          req.flash('error', 'Campground not found');
+          res.redirect('back');
         } else if (campground.author.id.equals(req.user._id)) {
           next();
         } else {
+          req.flash('error', 'Permission denied');
           res.redirect('back');
         }
       }
     );
   } else {
+    req.flash('Please login');
     res.redirect('/login');
   }
 };
